@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard · Mini CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">L</div>
+        <div>
+          <div class="brand-name">Mini CRM</div>
+          <div class="brand-sub">Lead pipeline</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="admin-pill">
+          <span class="admin-dot"></span>
+          <span id="adminEmail">—</span>
+        </div>
+        <button class="btn btn-ghost" id="logoutBtn">Log out</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1>Leads</h1>
+          <p>Drag a card between columns, or open it to update status and add follow-up notes.</p>
+        </div>
+        <a href="contact.html" target="_blank" class="btn" title="Opens the public contact form in a new tab">
+          View public contact form ↗
+        </a>
+      </div>
+
+      <section class="stats-row" id="statsRow">
+        <div class="stat-card">
+          <div class="stat-label">Total leads</div>
+          <div class="stat-value" id="statTotal">—</div>
+          <div class="stat-sub" id="statNewWeek">&nbsp;</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">New</div>
+          <div class="stat-value accent-blue" id="statNew">—</div>
+          <div class="stat-sub">Awaiting first contact</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Contacted</div>
+          <div class="stat-value accent-amber" id="statContacted">—</div>
+          <div class="stat-sub">In conversation</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Converted</div>
+          <div class="stat-value accent-green" id="statConverted">—</div>
+          <div class="stat-sub" id="statConversion">&nbsp;</div>
+        </div>
+      </section>
+
+      <div class="toolbar">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search by name, email, company, or source…" />
+        <select class="filter-select" id="sortSelect">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+        </select>
+        <button class="btn" id="refreshBtn">Refresh</button>
+      </div>
+
+      <div id="boardWrap">
+        <div class="pipeline" id="pipeline">
+          <div class="pipeline-col" data-status="new">
+            <div class="pipeline-col-head">
+              <div class="pipeline-col-title"><span class="status-dot new"></span>New</div>
+              <div class="pipeline-col-count" id="countNew">0</div>
+            </div>
+            <div class="pipeline-col-body" id="colNew"></div>
+          </div>
+          <div class="pipeline-col" data-status="contacted">
+            <div class="pipeline-col-head">
+              <div class="pipeline-col-title"><span class="status-dot contacted"></span>Contacted</div>
+              <div class="pipeline-col-count" id="countContacted">0</div>
+            </div>
+            <div class="pipeline-col-body" id="colContacted"></div>
+          </div>
+          <div class="pipeline-col" data-status="converted">
+            <div class="pipeline-col-head">
+              <div class="pipeline-col-title"><span class="status-dot converted"></span>Converted</div>
+              <div class="pipeline-col-count" id="countConverted">0</div>
+            </div>
+            <div class="pipeline-col-body" id="colConverted"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Lead detail modal -->
+  <div class="modal-backdrop" id="modalBackdrop" style="display:none;">
+    <div class="modal" id="modal"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
