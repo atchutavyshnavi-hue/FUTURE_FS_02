@@ -4,44 +4,41 @@
 
 const express = require("express");
 const { v4: uuid } = require("uuid");
-const { db } = require("../db");
+const { getDb } = require("../db");
 
 const router = express.Router();
 
 const VALID_STATUSES = ["new", "contacted", "converted"];
+const NO_ID = { projection: { _id: 0 } }; // never leak Mongo's internal _id in API responses
 
 // GET /api/leads?search=&status=&sort=newest|oldest
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   const { search = "", status = "", sort = "newest" } = req.query;
+  const leadsCol = getDb().collection("leads");
 
-  let leads = [...db.data.leads];
-
+  const query = {};
   if (status && VALID_STATUSES.includes(status)) {
-    leads = leads.filter((l) => l.status === status);
+    query.status = status;
   }
-
   if (search && search.trim()) {
-    const q = search.trim().toLowerCase();
-    leads = leads.filter(
-      (l) =>
-        l.name.toLowerCase().includes(q) ||
-        l.email.toLowerCase().includes(q) ||
-        (l.company || "").toLowerCase().includes(q) ||
-        (l.source || "").toLowerCase().includes(q)
-    );
+    const q = search.trim();
+    const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"); // escape regex special chars
+    query.$or = [{ name: re }, { email: re }, { company: re }, { source: re }];
   }
 
-  leads.sort((a, b) => {
-    const diff = new Date(a.createdAt) - new Date(b.createdAt);
-    return sort === "oldest" ? diff : -diff;
-  });
+  const leads = await leadsCol
+    .find(query, NO_ID)
+    .sort({ createdAt: sort === "oldest" ? 1 : -1 })
+    .toArray();
 
   res.json({ leads, total: leads.length });
 });
 
 // GET /api/leads/analytics/summary  (defined before /:id so it isn't swallowed by it)
-router.get("/analytics/summary", (req, res) => {
-  const leads = db.data.leads;
+router.get("/analytics/summary", async (req, res) => {
+  const leadsCol = getDb().collection("leads");
+  const leads = await leadsCol.find({}, NO_ID).toArray();
+
   const total = leads.length;
   const byStatus = VALID_STATUSES.reduce((acc, s) => {
     acc[s] = leads.filter((l) => l.status === s).length;
@@ -75,8 +72,8 @@ router.get("/analytics/summary", (req, res) => {
 });
 
 // GET /api/leads/:id
-router.get("/:id", (req, res) => {
-  const lead = db.data.leads.find((l) => l.id === req.params.id);
+router.get("/:id", async (req, res) => {
+  const lead = await getDb().collection("leads").findOne({ id: req.params.id }, NO_ID);
   if (!lead) return res.status(404).json({ error: "Lead not found." });
   res.json({ lead });
 });
@@ -88,12 +85,15 @@ router.patch("/:id/status", async (req, res) => {
     return res.status(400).json({ error: `Status must be one of: ${VALID_STATUSES.join(", ")}` });
   }
 
-  const lead = db.data.leads.find((l) => l.id === req.params.id);
-  if (!lead) return res.status(404).json({ error: "Lead not found." });
+  const leadsCol = getDb().collection("leads");
+  const result = await leadsCol.findOneAndUpdate(
+    { id: req.params.id },
+    { $set: { status, updatedAt: new Date().toISOString() } },
+    { returnDocument: "after", projection: { _id: 0 } }
+  );
 
-  lead.status = status;
-  lead.updatedAt = new Date().toISOString();
-  await db.write();
+  const lead = result && result.value ? result.value : result; // driver-version-safe
+  if (!lead) return res.status(404).json({ error: "Lead not found." });
 
   res.json({ lead });
 });
@@ -105,25 +105,25 @@ router.post("/:id/notes", async (req, res) => {
     return res.status(400).json({ error: "Note text is required." });
   }
 
-  const lead = db.data.leads.find((l) => l.id === req.params.id);
-  if (!lead) return res.status(404).json({ error: "Lead not found." });
-
   const note = { id: uuid(), text: text.trim().slice(0, 2000), createdAt: new Date().toISOString() };
-  lead.notes.push(note);
-  lead.updatedAt = new Date().toISOString();
-  await db.write();
+  const leadsCol = getDb().collection("leads");
+
+  const result = await leadsCol.findOneAndUpdate(
+    { id: req.params.id },
+    { $push: { notes: note }, $set: { updatedAt: new Date().toISOString() } },
+    { returnDocument: "after", projection: { _id: 0 } }
+  );
+
+  const lead = result && result.value ? result.value : result;
+  if (!lead) return res.status(404).json({ error: "Lead not found." });
 
   res.status(201).json({ lead });
 });
 
 // DELETE /api/leads/:id
 router.delete("/:id", async (req, res) => {
-  const idx = db.data.leads.findIndex((l) => l.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ error: "Lead not found." });
-
-  db.data.leads.splice(idx, 1);
-  await db.write();
-
+  const result = await getDb().collection("leads").deleteOne({ id: req.params.id });
+  if (result.deletedCount === 0) return res.status(404).json({ error: "Lead not found." });
   res.json({ message: "Lead deleted." });
 });
 

@@ -6,7 +6,7 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit");
 const { v4: uuid } = require("uuid");
-const { db } = require("../db");
+const { getDb } = require("../db");
 
 const router = express.Router();
 
@@ -45,8 +45,7 @@ router.post("/leads", submitLimiter, async (req, res) => {
     updatedAt: now,
   };
 
-  db.data.leads.unshift(lead);
-  await db.write();
+  await getDb().collection("leads").insertOne(lead);
 
   res.status(201).json({ message: "Thanks! We received your message and will be in touch soon." });
 });

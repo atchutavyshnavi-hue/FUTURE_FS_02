@@ -7,7 +7,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
-const { db } = require("../db");
+const { getDb } = require("../db");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
@@ -28,7 +28,7 @@ router.post("/login", loginLimiter, async (req, res) => {
     return res.status(400).json({ error: "Email and password are required." });
   }
 
-  const admin = db.data.admins.find((a) => a.email === String(email).toLowerCase());
+  const admin = await getDb().collection("admins").findOne({ email: String(email).toLowerCase() });
   if (!admin) {
     return res.status(401).json({ error: "Invalid email or password." });
   }

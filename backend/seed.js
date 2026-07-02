@@ -6,19 +6,22 @@
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const { v4: uuid } = require("uuid");
-const { db, initDb } = require("./db");
+const { initDb, getDb } = require("./db");
 
 async function seed() {
   await initDb();
+  const db = getDb();
+  const admins = db.collection("admins");
+  const leads = db.collection("leads");
 
   // --- Admin account -------------------------------------------------
   const adminEmail = (process.env.DEFAULT_ADMIN_EMAIL || "admin@miniCRM.com").toLowerCase();
   const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD || "ChangeMe123!";
 
-  const existingAdmin = db.data.admins.find((a) => a.email === adminEmail);
+  const existingAdmin = await admins.findOne({ email: adminEmail });
   if (!existingAdmin) {
     const passwordHash = await bcrypt.hash(adminPassword, 10);
-    db.data.admins.push({
+    await admins.insertOne({
       id: uuid(),
       name: "Admin",
       email: adminEmail,
@@ -31,7 +34,8 @@ async function seed() {
   }
 
   // --- Sample leads ----------------------------------------------------
-  if (db.data.leads.length === 0) {
+  const leadCount = await leads.countDocuments();
+  if (leadCount === 0) {
     const now = Date.now();
     const sampleLeads = [
       {
@@ -86,14 +90,14 @@ async function seed() {
         updatedAt: new Date(now - 1000 * 60 * 60 * 5).toISOString(),
       },
     ];
-    db.data.leads.push(...sampleLeads);
+    await leads.insertMany(sampleLeads);
     console.log(`Added ${sampleLeads.length} sample leads.`);
   } else {
     console.log("Leads already exist, skipping sample data.");
   }
 
-  await db.write();
   console.log("Seed complete.");
+  process.exit(0);
 }
 
 seed().catch((err) => {
