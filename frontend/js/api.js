@@ -2,9 +2,10 @@
 // Tiny fetch wrapper shared by the login page, dashboard, and contact form.
 // Change API_BASE if your backend runs somewhere other than localhost:4000.
 
-const API_BASE = window.location.origin.includes("4000")
-  ? "" // served from the same Express server -> use relative paths
-  : "http://localhost:4000";
+// const API_BASE = window.location.origin.includes("4000")
+//   ? "" // served from the same Express server -> use relative paths
+//   : "http://localhost:4000";
+const API_BASE = ""; // frontend and backend are always served from the same origin
 
 const TOKEN_KEY = "miniCrmToken";
 const ADMIN_KEY = "miniCrmAdmin";
