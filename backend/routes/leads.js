@@ -58,7 +58,20 @@ router.get("/analytics/summary", (req, res) => {
   const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const newThisWeek = leads.filter((l) => new Date(l.createdAt).getTime() >= sevenDaysAgo).length;
 
-  res.json({ total, byStatus, conversionRate, bySource, newThisWeek });
+  // Leads received per month, for the last 6 months (oldest -> newest)
+  const now = new Date();
+  const byMonth = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const label = d.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+    const count = leads.filter((l) => {
+      const created = new Date(l.createdAt);
+      return created.getFullYear() === d.getFullYear() && created.getMonth() === d.getMonth();
+    }).length;
+    byMonth.push({ label, count });
+  }
+
+  res.json({ total, byStatus, conversionRate, bySource, newThisWeek, byMonth });
 });
 
 // GET /api/leads/:id

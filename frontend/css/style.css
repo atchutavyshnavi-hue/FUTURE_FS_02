@@ -272,6 +272,42 @@ textarea:focus-visible {
 .stat-value.accent-amber { color: var(--amber); }
 .stat-value.accent-green { color: var(--green); }
 
+/* ---------- Charts ---------- */
+
+.charts-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+
+.chart-card-head h3 {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.chart-card-head p {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 2px 0 14px;
+}
+
+.chart-canvas-wrap {
+  position: relative;
+  height: 220px;
+}
+
+@media (max-width: 860px) {
+  .charts-row { grid-template-columns: 1fr; }
+}
+
 /* ---------- Toolbar ---------- */
 
 .toolbar {

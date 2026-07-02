@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="css/style.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
 </head>
 <body>
   <div class="app-shell">
@@ -58,6 +59,27 @@
           <div class="stat-label">Converted</div>
           <div class="stat-value accent-green" id="statConverted">—</div>
           <div class="stat-sub" id="statConversion">&nbsp;</div>
+        </div>
+      </section>
+
+      <section class="charts-row">
+        <div class="chart-card">
+          <div class="chart-card-head">
+            <h3>Leads received per month</h3>
+            <p>Last 6 months</p>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="monthlyChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card chart-card-narrow">
+          <div class="chart-card-head">
+            <h3>Status breakdown</h3>
+            <p>New / Contacted / Converted</p>
+          </div>
+          <div class="chart-canvas-wrap">
+            <canvas id="statusChart"></canvas>
+          </div>
         </div>
       </section>
 

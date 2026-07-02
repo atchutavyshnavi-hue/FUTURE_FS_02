@@ -69,9 +69,79 @@
       document.getElementById("statContacted").textContent = data.byStatus.contacted || 0;
       document.getElementById("statConverted").textContent = data.byStatus.converted || 0;
       document.getElementById("statConversion").textContent = `${data.conversionRate}% conversion rate`;
+      renderCharts(data);
     } catch (err) {
       console.error(err);
     }
+  }
+
+  // --- Charts (Chart.js) ------------------------------------------------------
+  let statusChartInstance = null;
+  let monthlyChartInstance = null;
+
+  function renderCharts(data) {
+    const gridColor = "#2a2f3a";
+    const textColor = "#8b93a3";
+
+    // Pie chart: status breakdown
+    const statusCtx = document.getElementById("statusChart");
+    if (statusChartInstance) statusChartInstance.destroy();
+    statusChartInstance = new Chart(statusCtx, {
+      type: "doughnut",
+      data: {
+        labels: ["New", "Contacted", "Converted"],
+        datasets: [
+          {
+            data: [data.byStatus.new || 0, data.byStatus.contacted || 0, data.byStatus.converted || 0],
+            backgroundColor: ["#5b8def", "#f2a93c", "#34c77b"],
+            borderColor: "#1c2029",
+            borderWidth: 2,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: { color: textColor, boxWidth: 10, padding: 14, font: { size: 11 } },
+          },
+        },
+      },
+    });
+
+    // Bar chart: leads received per month
+    const monthlyCtx = document.getElementById("monthlyChart");
+    if (monthlyChartInstance) monthlyChartInstance.destroy();
+    monthlyChartInstance = new Chart(monthlyCtx, {
+      type: "bar",
+      data: {
+        labels: (data.byMonth || []).map((m) => m.label),
+        datasets: [
+          {
+            label: "Leads received",
+            data: (data.byMonth || []).map((m) => m.count),
+            backgroundColor: "#f2a93c",
+            borderRadius: 4,
+            maxBarThickness: 42,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: textColor, font: { size: 11 } } },
+          y: {
+            beginAtZero: true,
+            ticks: { color: textColor, stepSize: 1, precision: 0, font: { size: 11 } },
+            grid: { color: gridColor },
+          },
+        },
+      },
+    });
   }
 
   async function loadLeads() {
