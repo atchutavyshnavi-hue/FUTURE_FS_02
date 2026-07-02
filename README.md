@@ -1,5 +1,12 @@
 # Mini CRM — Client Lead Management System
 
+🔗 **Live demo:** [future-fs-02-h65d.onrender.com](https://future-fs-02-h65d.onrender.com)
+
+📋 **Admin login:** [future-fs-02-h65d.onrender.com/login.html](https://future-fs-02-h65d.onrender.com/login.html)
+
+📝 **Try the contact form:** [future-fs-02-h65d.onrender.com/contact.html](https://future-fs-02-h65d.onrender.com/contact.html)
+
+> Note: hosted on Render's free tier — if it's been idle, the first load can take 30-60 seconds to wake up.
 A small, working CRM for agencies, freelancers, and startups to capture leads from a
 website contact form, track them through a pipeline (**New → Contacted → Converted**),
 log follow-up notes, and see basic conversion analytics — all behind a secure admin login.
